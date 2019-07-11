@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+	</head>
+	<body>
+	
+		登录页面
+		
+		  <button type="button" onclick="signin()">提交</button>
+      
+	</body>
+</html>
+<script src="js/jquery.js"></script>
+<script>
+var data={
+		username:"李华",
+		password:"123456"
+}	
+	
+	function signin(){
+		
+		$.ajax({
+			type:"post",
+			url:"user/userlogin",
+			data:data,
+			success:function(data){
+				console.log(data);
+				window.location.href="chat.html";
+			}
+		});
+		
+		
+	}
+	
+</script>

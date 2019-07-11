@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>index page</title>
+<script src="js/jquery.js"></script>
+</head>
+<body>
+<h2>Hello World</h2>
+<form action="user/register" method="POST">
+
+	<button type="button" onclick="insert()">插入数据</button>
+	<button type="button" onclick="delet()">删除id为2的数据</button>
+	<button type="button" onclick="ssupdate()">更新id为2的数据</button>
+	<button type="button" onclick="findone()">查询id为2的数据</button>
+	<button type="button" onclick="findrepeat()">查询id为jack的数据</button>
+</form> 
+
+<form action="file/upload" method="POST" enctype="multipart/form-data">
+单个美照：<input type="file" name="formData" multiple/><br>
+<input type="submit" value="上传">
+</form>
+
+
+
+</body>
+<script>
+var data={
+		username:"jack",
+		password:"123345"
+}
+function insert(){
+	$.ajax({
+		type:"POST",
+		url:"user/register",
+		data:data,
+		success:function(data){
+			console.log(data)
+		}
+	}); 
+}
+var id={
+		id:1
+}
+function delet(){
+	
+	$.ajax({
+		type:"POST",
+		url:"user/deletuser",
+		data:id,
+		success:function(data){
+			console.log(data)
+		}
+	}); 
+	
+}
+var update={
+		id:2,
+		username:"rosee"
+}
+
+function ssupdate(){
+	
+	$.ajax({
+		type:"POST",
+		url:"user/updateuser",
+		data:update,
+		success:function(data){
+			console.log(data)
+		}
+	}); 
+	
+}
+function findone(){
+
+	$.ajax({
+		type:"POST",
+		url:"user/finduser",
+		data:id,
+		success:function(data){
+			console.log(data)
+		}
+	}); 
+	
+	
+	
+}
+var dataname={
+		username:"gdfgdf"
+};
+
+function findrepeat(){
+	
+	$.ajax({
+		type:"POST",
+		url:"user/repeatuser",
+		data:dataname,
+		success:function(data){
+			console.log(data);
+		}
+	}); 
+	
+	
+	
+}
+
+</script>
+</html>

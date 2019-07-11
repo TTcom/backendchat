@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:context="http://www.springframework.org/schema/context" xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:aop="http://www.springframework.org/schema/aop" xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xmlns:mybatis="http://mybatis.org/schema/mybatis-spring"
+	xmlns:task="http://www.springframework.org/schema/task"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+					    http://www.springframework.org/schema/beans/spring-beans-4.3.xsd 
+				        http://www.springframework.org/schema/context
+				        http://www.springframework.org/schema/context/spring-context-4.3.xsd
+				        http://www.springframework.org/schema/tx
+				        http://www.springframework.org/schema/tx/spring-tx-4.3.xsd
+				        http://www.springframework.org/schema/aop 
+					    http://www.springframework.org/schema/aop/spring-aop-4.3.xsd
+					    http://www.springframework.org/schema/mvc 
+					    http://www.springframework.org/schema/mvc/spring-mvc-4.3.xsd
+				        http://mybatis.org/schema/mybatis-spring 
+					    http://mybatis.org/schema/mybatis-spring.xsd
+					    http://www.springframework.org/schema/task
+					    http://www.springframework.org/schema/task/spring-task-4.3.xsd">
+
+	<context:component-scan base-package="com.kedacom"></context:component-scan>
+	<mvc:annotation-driven>
+		<mvc:message-converters register-defaults="true">
+			<bean
+				class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter"></bean>
+		</mvc:message-converters>
+	</mvc:annotation-driven>
+
+	<!-- <task:scheduled-tasks> 
+                  <task:scheduled ref="taskJob" method="job1" cron="0 * * * * ?"/> 
+    </task:scheduled-tasks> -->
+	<task:annotation-driven scheduler="qbScheduler" mode="proxy"/> 
+    <task:scheduler id="qbScheduler" pool-size="10"/> 
+
+	<bean
+		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<property name="locations">
+			<list>
+				<value>classpath:jdbc.properties</value>
+			</list>
+		</property>
+	</bean>
+
+
+
+	<!-- 配置数据源 -->
+	<bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource"
+		destroy-method="close">
+		<property name="driverClassName" value="${driver}" />
+		<property name="url" value="${url}" />
+		<property name="username" value="${username}" />
+		<property name="password" value="${password}" />
+		<!-- 初始化连接大小 -->
+		<property name="initialSize" value="${initialSize}"></property>
+		<!-- 连接池最大数量 -->
+		<property name="maxActive" value="${maxActive}"></property>
+		<!-- 连接池最大空闲 -->
+		<property name="maxIdle" value="${maxIdle}"></property>
+		<!-- 连接池最小空闲 -->
+		<property name="minIdle" value="${minIdle}"></property>
+		<!-- 获取连接最大等待时间 -->
+		<property name="maxWait" value="${maxWait}"></property>
+	</bean>
+
+	<!-- spring和MyBatis完美整合，不需要mybatis的配置映射文件 -->
+	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="dataSource" />
+		<!-- 自动扫描mapping.xml文件 -->
+		<property name="mapperLocations" value="classpath:sqlMapper/*.xml"></property>
+	</bean>
+
+	<!-- DAO接口所在包名，Spring会自动查找其下的类 -->
+	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+		<property name="basePackage" value="com.kedacom.dao" />
+		<property name="sqlSessionFactoryBeanName" value="sqlSessionFactory">
+		</property>
+	</bean>
+
+	<!-- (事务管理)transaction manager, use JtaTransactionManager for global tx -->
+	<bean id="transactionManager"
+		class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSource" />
+	</bean>
+
+	<!-- DB 事务控制的业务方法配置 -->
+	<tx:advice id="txAdvice" transaction-manager="transactionManager">
+
+		<tx:attributes>
+			<tx:method name="save*" isolation="DEFAULT" propagation="REQUIRED"
+				rollback-for="java.lang.Exception" />
+			<tx:method name="update*" isolation="DEFAULT" propagation="REQUIRED"
+				rollback-for="java.lang.Exception" />
+
+			<tx:method name="delete*" isolation="DEFAULT" propagation="REQUIRED"
+				rollback-for="java.lang.Exception" />
+			<!-- 除以上方法外默认都是只读事务 -->
+			<tx:method name="*" read-only="true" />
+		</tx:attributes>
+	</tx:advice>
+	<mvc:cors>
+		<mvc:mapping path="/**" />
+	</mvc:cors>
+
+	<!-- <mvc:interceptors>
+		拦截器的执行顺序与拦截器的执行顺序一致
+		<mvc:interceptor>
+			<mvc:mapping path="/**/chatting" />
+			<bean class="com.kedacom.intercepter.MyIntercepter"></bean>
+		</mvc:interceptor>
+	</mvc:interceptors> -->
+
+	<!-- 注册文件上传解析器,解析器id固定，由dispatherServlet直接调用 -->
+	<bean id="multipartResolver"
+		class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+		<property name="defaultEncoding" value="UTF-8"></property>
+		<!-- 此处配置为1G大小 -->
+		<property name="maxUploadSize" value="1073741824"></property>
+	</bean>
+	<bean id="springUtils" class="com.kedacom.utils.SpringUtils"/>
+
+
+</beans>
